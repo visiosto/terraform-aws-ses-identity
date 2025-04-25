@@ -1,0 +1,22 @@
+name: Lint
+
+on:
+  push:
+    paths:
+      - "**.tf"
+      - .github/workflows/lint.yml
+  pull_request:
+    paths:
+      - "**.tf"
+      - .github/workflows/lint.yml
+
+jobs:
+  lint:
+    strategy:
+      matrix:
+        terraform-version: ["~1.9.0", "latest"]
+    uses: visiosto/workflows/.github/workflows/lint-terraform-module.yml@v0.3.3
+    with:
+      terraform-version: ${{ matrix.terraform-version }}
+    secrets:
+      access-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
