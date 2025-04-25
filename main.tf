@@ -19,21 +19,25 @@ locals {
   records = {
     (var.zone_name) = merge(
       {
-        "MX:${local.mail_from_subdomain}" = {
+        "mx" = {
+          name     = local.mail_from_subdomain
+          type     = "MX"
           content  = "feedback-smtp.${data.aws_region.current.name}.amazonses.com"
           priority = 10
           # ttl = 600
         }
-        "TXT:${local.mail_from_subdomain}" = {
+        "spf" = {
+          name    = local.mail_from_subdomain
+          type    = "TXT"
           content = "\"v=spf1 include:amazonses.com ~all\""
           # ttl = 600
         }
       },
       {
-        for i, t in aws_ses_domain_dkim.this.dkim_tokens : "dkim_${i}" => {
-          name    = local.subdomain == "" ? "${t}._domainkey" : "${t}._domainkey.${local.subdomain}"
+        for i in range(3) : "dkim_${i}" => {
+          name    = local.subdomain == "" ? "${aws_ses_domain_dkim.this.dkim_tokens[i]}._domainkey" : "${aws_ses_domain_dkim.this.dkim_tokens[i]}._domainkey.${local.subdomain}"
           type    = "CNAME"
-          content = "${t}.dkim.amazonses.com"
+          content = "${aws_ses_domain_dkim.this.dkim_tokens[i]}.dkim.amazonses.com"
           # ttl = 600
         }
       },
